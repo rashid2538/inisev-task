@@ -29,7 +29,7 @@ class ApiTest extends TestCase
      */
     public function testsWebsiteSubscription()
     {
-        $this->json('POST', 'api/1/subscribe/1')
+        $this->json('POST', 'api/1/subscribe/' . mt_rand(1, 10))
             ->assertStatus(200);
     }
 }
