@@ -2,41 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreatePostRequest;
+use App\Http\Requests\SubscribeRequest;
 use App\Models\Post;
-use App\Models\User;
 use App\Models\Website;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\Routing\Annotation\Route;
 
-class ApiController extends Controller {
+#[Route('/api')]
+class ApiController extends Controller
+{
 
     // Endpoint to create a "post" for a "particular website".
-    public function createPost(Website $website, Request $createPostRequest) {
-        $requestData = $createPostRequest->validate([
-            'title' => 'required|max:255',
-            'description' => 'required',
-        ]);
-        $requestData['website_id'] = $website->id;
-        $post = Post::create($requestData);
-        return $this->success(['post_id' => $post->id]);
-    }
-
-    // Endpoint to make a user subscribe to a "particular website" with all the tiny validations included in it.
-    public function subscribe(Website $website, User $user) {
+    #[Route('/create-post', methods:'POST')]
+    public function createPost(CreatePostRequest $request)
+    {
         try {
-            $website->subscribers()->attach($user);
-            return $this->success("{$user->name} has subscribed to {$website->name}.");
-        } catch(\Exception $ex) {
-            return $this->failure("{$user->name} is already subscribed to {$website->name}!");
+            $post = Post::create($request->validated());
+            return $this->success(['post_id' => $post->id]);
+        } catch (\Exception$ex) {
+            Log::error($ex->getMessage(), $ex);
+            return $this->failure("Error occured while creating a new post, contact administrator for more information!");
         }
     }
 
     // Endpoint to make a user subscribe to a "particular website" with all the tiny validations included in it.
-    public function unsubscribe(Website $website, User $user) {
-        $website->subscribers()->detach($user);
-        return $this->success("{$user->name} has unsubscribed to {$website->name}.");
+    #[Route('/subscribe', methods:'POST')]
+    public function subscribe(SubscribeRequest $request)
+    {
+        $requestData = $request->validated();
+        try {
+            $website = Website::find($requestData['website_id']);
+            if ($website->subscribers()->wherePivot('user_id', $requestData['user_id'])->count() == 1) {
+                return $this->failure("User is already subscribed to {$website->name}!");
+            }
+            $website->subscribers()->attach($requestData['user_id']);
+            return $this->success("User subscribed to {$website->name}.");
+        } catch (\Exception$ex) {
+            Log::error($ex->getMessage(), $ex);
+            return $this->failure("Error occured while subscribing to the website, contact administrator for more information!");
+        }
     }
 
-    private function success(mixed $result = true) {
+    #[Route('/unsubscribe', methods:'POST')]
+    public function unsubscribe(SubscribeRequest $request)
+    {
+        $requestData = $request->validated();
+        try {
+            $website = Website::find($requestData['website_id']);
+            if ($website->subscribers()->wherePivot('user_id', $requestData['user_id'])->count() == 1) {
+                $website->subscribers()->detach($requestData['user_id']);
+                return $this->success("User unsubscribed from {$website->name}.");
+            } else {
+                return $this->failure("User is not subscribed to {$website->name}!");
+            }
+        } catch (\Exception$ex) {
+            Log::error($ex->getMessage(), $ex);
+            return $this->failure("Error occured while subscribing to the website, contact administrator for more information!");
+        }
+    }
+
+    private function success(mixed $result = true)
+    {
         return response()->json([
             'status' => 200,
             'error' => false,
@@ -44,7 +71,8 @@ class ApiController extends Controller {
         ]);
     }
 
-    private function failure(mixed $message = true) {
+    private function failure(mixed $message = true)
+    {
         return response()->json([
             'status' => 500,
             'error' => true,

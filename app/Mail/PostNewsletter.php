@@ -13,17 +13,16 @@ class PostNewsletter extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
-    public Post $post;
+    public $posts;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(int $postId)
+    public function __construct($posts)
     {
-        $this->post = Post::findOrFail($postId);
-        echo "Sending newsletter ...";
+        $this->posts = $posts;
     }
 
     /**
@@ -33,6 +32,7 @@ class PostNewsletter extends Mailable implements ShouldQueue
      */
     public function build()
     {
+        echo "Sending newsletter ...";
         return $this->markdown('emails.newsletter');
     }
 }

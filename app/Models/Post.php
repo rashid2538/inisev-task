@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -24,6 +26,10 @@ class Post extends Model
     public function website()
     {
         return $this->belongsTo(Website::class);
+    }
+
+    public function scopeRecent(Builder $query) {
+        return $query->where('created_at', '>', Carbon::now()->subtract('hours', 24));
     }
 
     protected static function boot()

@@ -15,11 +15,11 @@ class ApiTest extends TestCase
      */
     public function testsCreateNewWebsitePost()
     {
-        $this->json('POST', 'api/1/create-post', [
+        $this->json('POST', 'api/create-post', [
             'title' => 'A test title',
-            'description' => 'Test case post description'
-        ])
-        ->assertStatus(200);
+            'description' => 'Test case post description',
+            'website_id' => 1,
+        ])->assertStatus(200);
     }
 
     /**
@@ -29,7 +29,9 @@ class ApiTest extends TestCase
      */
     public function testsWebsiteSubscription()
     {
-        $this->json('POST', 'api/1/subscribe/' . mt_rand(1, 10))
-            ->assertStatus(200);
+        $this->json('POST', 'api/subscribe', [
+            'website_id' => mt_rand(1, 3),
+            'user_id' => mt_rand(1, 10),
+        ])->assertStatus(200);
     }
 }

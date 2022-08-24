@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\NewsletterEvent;
 use App\Mail\PostNewsletter;
 use App\Models\Website;
 use Illuminate\Console\Command;
@@ -14,7 +15,7 @@ class SendNewsletter extends Command
      *
      * @var string
      */
-    protected $signature = 'newsletter:send {website}';
+    protected $signature = 'newsletter:send';
 
     /**
      * The console command description.
@@ -30,15 +31,6 @@ class SendNewsletter extends Command
      */
     public function handle()
     {
-        $websiteId = $this->argument('website');
-        $website = Website::findOrFail($websiteId);
-        $latestPost = $website->posts()->orderBy('created_at', 'desc')->first();
-        if ($latestPost) {
-            $emails = [];
-            foreach ($website->subscribers as $user) {
-                $emails[] = $user->email;
-            }
-            Mail::to($emails)->queue(new PostNewsletter($latestPost->id));
-        }
+        event(new NewsletterEvent());
     }
 }

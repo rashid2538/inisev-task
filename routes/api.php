@@ -22,11 +22,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(ApiController::class)->group(function() {
 
     // Route to create new post in a website
-    Route::post('/{website}/create-post/', 'createPost');
+    Route::post('/create-post/', 'createPost');
 
     // Route to subscribe a website
-    Route::post('/{website}/subscribe/{user}/', 'subscribe');
+    Route::post('/subscribe/', 'subscribe');
 
     // Route to unsubscribe a website
-    Route::post('/{website}/unsubscribe/{user}/', 'unsubscribe');
+    Route::post('/unsubscribe/', 'unsubscribe');
 });

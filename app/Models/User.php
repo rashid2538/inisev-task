@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -41,4 +43,18 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function scopeVerified(Builder $query) {
+        return $query->whereNotNull('email_verified_at');
+    }
+
+    public function notifiedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'user_notified_posts');
+    }
+
+    public function subscribedWebsites()
+    {
+        return $this->belongsToMany(Website::class, 'website_subscribers');
+    }
 }
